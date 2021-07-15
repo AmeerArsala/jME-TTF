@@ -1,150 +1,56 @@
-// Gradle build script for jME-TTF Maven artifacts
+buildscript {
 
-plugins {
-    id 'java-library'
-    id 'maven-publish'
-    id 'signing'
-}
+    /** version */
+    //ext.jmeOfficialVersion = '3.3.0-alpha1'
+    //ext.jmeOfficialVersion = '3.3.0-alpha5'
+    ext.jmeOfficialVersion = '3.3.0-beta1'
+//    ext.jmeOfficialVersion = '3.2.4-stable'
+    ext.jmeVersion = ext.jmeOfficialVersion
 
-description = 'A TrueType font rendering subsystem for jMonkeyEngine.'
-ext {
-    group = 'com.github.stephengold'
-    artifact = 'jme-ttf'
-    version = '2.2.4'
-    baseName = "${artifact}-${version}"
-    jme3Version='3.4.0-stable'
-}
-
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-tasks.withType(JavaCompile) { // compile-time options:
-    //options.compilerArgs << '-Xlint:unchecked'
-    options.deprecation = true
-    options.encoding = 'UTF-8'
-}
-
-javadoc {
-    // Disable doclint for JDK8+.
-    if (JavaVersion.current().isJava8Compatible()) {
-        options.addStringOption('Xdoclint:none', '-quiet')
+    repositories {
+        jcenter()
     }
 }
 
+plugins {
+	id 'java-library'
+	id 'maven'
+}
+
+version='2.2.2'
+group='com.atr'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+ext.jme3Version=ext.jmeVersion
+
 repositories {
-//    mavenLocal()
-    mavenCentral()
+	mavenLocal()
+
+    if( JavaVersion.current() == JavaVersion.VERSION_1_7 ) {
+        // Fallback for JDK 7 that can no longer connect to jcenter with https
+        maven { url "http://jcenter.bintray.com" }
+    } else {
+        jcenter()
+    }
 }
 
 dependencies {
-    api 'org.jmonkeyengine:jme3-core:' + jme3Version
-    api 'com.jaredrummler:sfntly:1.0.1'
+    implementation "org.jmonkeyengine:jme3-core:${jme3Version}"
+    implementation 'com.jaredrummler:sfntly:1.+'
 
-    // provided when running on Desktop
-    compileOnly 'org.jmonkeyengine:jme3-desktop:' + jme3Version
-
-    // provided when running on Android
-    compileOnly 'org.jmonkeyengine:jme3-android:' + jme3Version
+//    // provided when running on Desktop
+    compileOnly "org.jmonkeyengine:jme3-desktop:${jme3Version}"
+//
+//    // provided when running on Android
+    compileOnly "org.jmonkeyengine:jme3-android:${jme3Version}"
     compileOnly 'com.google.android:android:4.1.1.4'
-
-    // test runtime
-    testRuntimeOnly 'org.jmonkeyengine:jme3-lwjgl:' + jme3Version
-}
-
-// publishing tasks
-
-jar {
-    archiveBaseName = project.ext.baseName
-}
-
-task javadocJar(type: Jar) {
-    archiveBaseName = project.ext.baseName
-    classifier = 'javadoc'
-    dependsOn 'javadoc'
-    description 'Create a JAR of javadoc.'
-    from javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    archiveBaseName = project.ext.baseName
-    classifier = 'sources'
-    dependsOn 'classes'
-    description 'Create a JAR of sourcecode.'
-    from sourceSets.main.allJava
-}
-
-build.dependsOn('pom', 'pomAsc')
-task('pom', type: Copy) {
-    dependsOn 'generatePomFileForMavenPublication'
-    from "${buildDir}/publications/maven/pom-default.xml"
-    into "${buildDir}/libs"
-    rename 'pom-default.xml', baseName + '.pom'
-}
-task('pomAsc', type: Copy) {
-    dependsOn 'signMavenPublication'
-    from "${buildDir}/publications/maven/pom-default.xml.asc"
-    into "${buildDir}/libs"
-    rename 'pom-default.xml.asc', baseName + '.pom.asc'
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifact javadocJar
-            artifact sourcesJar
-            artifactId artifact
-            from components.java
-            groupId project.ext.group
-            pom {
-                description = project.description
-                developers {
-                    developer {
-                        email = 'tryder@protonmail.com'
-                        name = 'Adam T. Ryder'
-                    }
-                }
-                licenses {
-                    license {
-                        name = 'Free Public License 1.0.0'
-                        url = 'https://github.com/stephengold/jME-TTF/blob/master/LICENSE'
-                    }
-                }
-                name = project.ext.group + ':' + artifact
-                scm {
-                    connection = 'scm:git:git://github.com/stephengold/jME-TTF.git'
-                    developerConnection = 'scm:git:ssh://github.com:stephengold/jME-TTF.git'
-                    url = 'https://github.com/stephengold/jME-TTF/tree/master'
-                }
-                suppressPomMetadataWarningsFor('apiElements') // Gradle issue #16555
-                url = 'https://github.com/stephengold/jME-TTF'
-            }
-            version project.ext.version
-        }
-    }
-    repositories {
-        maven {
-            credentials {
-                username = project.hasProperty('ossrhUsername') ? ossrhUsername : 'Unknown user'
-                password = project.hasProperty('ossrhPassword') ? ossrhPassword : 'Unknown password'
-            }
-            name = 'OSSRH'
-            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
-        }
-    }
-}
-generateMetadataFileForMavenPublication.dependsOn('pom')
-publishToMavenLocal.doLast {
-    println 'published to ' + baseName
-}
-task('release') {
-    dependsOn 'publishMavenPublicationToOSSRHRepository'
-}
-
-// signing tasks
-
-signing {
-    sign publishing.publications.maven
-}
-tasks.withType(Sign) {
-    onlyIf { gradle.rootProject.hasProperty('signing.keyId') }
+//
+//    // test runtime
+//    testRuntimeOnly "org.jmonkeyengine:jme3-lwjgl:${jme3Version}"
 }
