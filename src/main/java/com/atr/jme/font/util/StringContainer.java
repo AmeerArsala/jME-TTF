@@ -122,6 +122,8 @@ public class StringContainer {
     private int numNonSpaceChars = 0;
     private int offset = 0;
     
+    private boolean useTextBox = true;
+    
     /**
      * Constructs a new <code>StringContainer</code> instance with no text
      * a default kerning of zero, horizontal alignment of <code>Align.Left</code>,
@@ -479,6 +481,24 @@ public class StringContainer {
     }
     
     /**
+     * 
+     * @return whether it uses the textBox Rectangle or not 
+     */
+    public boolean useTextBox() {
+        return useTextBox;
+    }
+    
+    /**
+     * Sets whether the textBox is used or not
+     * If false, no constraints
+     * 
+     * @param useRectangle
+     */
+    public void setUseTextBox(boolean useRectangle) {
+        useTextBox = useRectangle;
+    }
+    
+    /**
      * The actual width of the text from the origin in the upper left
      * corner to the right side of the last character in the longest line.
      * This will equal zero until the first call to {@link #getLines()}.
@@ -727,7 +747,7 @@ public class StringContainer {
                 break;
             case CharClip:
                 lineLoop: for (int i = 0; i < tmpLines.length; i++) {
-                    if (((newLines.size() + 1) * font.getScaledLineHeight()) - font.getScaledLineGap() > textBox.height)
+                    if (useTextBox && ((newLines.size() + 1) * font.getScaledLineHeight()) - font.getScaledLineGap() > textBox.height)
                         break;
 
                     int pos = 0;
@@ -738,13 +758,13 @@ public class StringContainer {
                         height += font.getScaledLineHeight();
                         lineWidthsArray.add(new Float(0));
                         lineHeightsArray.add(new Vector2f());
-                        if (height + font.getScaledLineHeight() - font.getScaledLineGap() > textBox.height)
+                        if (useTextBox && height + font.getScaledLineHeight() - font.getScaledLineGap() > textBox.height)
                             break;
                         continue;
                     }
 
                     while (pos < glyphs.length) {
-                        if (height + (font.getScaledLineHeight() * 2)
+                        if (!useTextBox || height + (font.getScaledLineHeight() * 2)
                                 - font.getScaledLineGap() <= textBox.height) {
                             Glyph[] newLine = getCharLine(pos, glyphs, lineWidthsArray,
                                     lineHeightsArray);
@@ -766,7 +786,7 @@ public class StringContainer {
                 break;
             default:
                 lineLoop: for (int i = 0; i < tmpLines.length; i++) {
-                    if (((newLines.size() + 1) * font.getScaledLineHeight()) - font.getScaledLineGap() > textBox.height)
+                    if (useTextBox && ((newLines.size() + 1) * font.getScaledLineHeight()) - font.getScaledLineGap() > textBox.height)
                         break;
 
                     int pos = 0;
@@ -777,13 +797,13 @@ public class StringContainer {
                         height += font.getScaledLineHeight();
                         lineWidthsArray.add(new Float(0));
                         lineHeightsArray.add(new Vector2f());
-                        if (height + font.getScaledLineHeight() - font.getScaledLineGap() > textBox.height)
+                        if (useTextBox && height + font.getScaledLineHeight() - font.getScaledLineGap() > textBox.height)
                             break;
                         continue;
                     }
                     
                     while (pos < glyphs.length) {
-                        if (height + (font.getScaledLineHeight() * 2)
+                        if (!useTextBox || height + (font.getScaledLineHeight() * 2)
                                 - font.getScaledLineGap() <= textBox.height) {
                             Glyph[] newLine = getWordLine(pos, glyphs, lineWidthsArray,
                                     lineHeightsArray);
@@ -856,7 +876,7 @@ public class StringContainer {
             int newPos = pos + 1;
             float gWidth = glyphs[newPos].getXAdvance() + (newPos < glyphs.length - 1 ? kerning : 0);
             gWidth *= font.getScale();
-            if (newWidth + gWidth > textBox.width)
+            if (useTextBox && newWidth + gWidth > textBox.width)
                 break;
             
             if (glyphs[newPos].codePoint != ' ')
@@ -886,7 +906,7 @@ public class StringContainer {
     
     private Glyph[] getCharClippedLine(int start, Glyph[] glyphs,
             float ellipsisWidth, List<Float>lineWidths, List<Vector2f> lineHeights) {
-        if (ellipsisWidth > textBox.width) {
+        if (useTextBox && ellipsisWidth > textBox.width) {
             lineWidths.add(new Float(0));
             lineHeights.add(new Vector2f(0, 0));
             return new Glyph[0];
@@ -901,7 +921,7 @@ public class StringContainer {
             int newPos = pos + 1;
             float gWidth = glyphs[newPos].getXAdvance() + (newPos < glyphs.length - 1 ? kerning : 0);
             gWidth *= font.getScale();
-            if (w + gWidth > textBox.width)
+            if (useTextBox && w + gWidth > textBox.width)
                 break;
             
             if (glyphs[newPos].codePoint != ' ')
@@ -931,7 +951,7 @@ public class StringContainer {
         }
         
         do {
-            if (w + ellipsisWidth <= textBox.width && glyphs[pos].codePoint != ' ')
+            if ((!useTextBox || w + ellipsisWidth <= textBox.width) && glyphs[pos].codePoint != ' ')
                 break;
             
             w -= (glyphs[pos].getXAdvance() + kerning) * font.getScale();
@@ -1006,7 +1026,7 @@ public class StringContainer {
                 int count = 0;
                 while(pos < glyphs.length) {
                     float nw = (glyphs[pos].getXAdvance() + (pos < glyphs.length - 1 ? kerning : 0)) * font.getScale();
-                    if (newWidth + nw + w > textBox.width) {
+                    if (useTextBox && newWidth + nw + w > textBox.width) {
                         if (count > 0) {
                             pos--;
                             newWidth -= (glyphs[pos - 1].getXAdvance() + kerning) * font.getScale();
@@ -1033,7 +1053,7 @@ public class StringContainer {
             for (int i = pos; i < wBound.end; i++) {
                 newWidth += (glyphs[i].getXAdvance() + (i < glyphs.length - 1 ? kerning : 0)) * font.getScale();
                 
-                if (w + newWidth > textBox.width) {
+                if (useTextBox && w + newWidth > textBox.width) {
                     pos += (numSpaces > 0) ? numSpaces - 1 : 0;
                     w += spaceWidth;
                     lineHeight.x = newAscent > lineHeight.x ? newAscent : lineHeight.x;
@@ -1087,7 +1107,7 @@ public class StringContainer {
     
     private Glyph[] getWordClippedLine(int start, Glyph[] glyphs,
             float ellipsisWidth, List<Float> lineWidths, List<Vector2f> lineHeights) {
-        if (ellipsisWidth > textBox.width) {
+        if (useTextBox && ellipsisWidth > textBox.width) {
             lineWidths.add(new Float(0));
             lineHeights.add(new Vector2f(0, 0));
             return new Glyph[0];
@@ -1105,7 +1125,7 @@ public class StringContainer {
                 int count = 0;
                 while(pos < glyphs.length) {
                     float nw = (glyphs[pos].getXAdvance() + (pos < glyphs.length - 1 ? kerning : 0)) * font.getScale();
-                    if (newWidth + nw + w > textBox.width) {
+                    if (useTextBox && newWidth + nw + w > textBox.width) {
                         if (count > 0) {
                             pos--;
                             newWidth -= (glyphs[pos - 1].getXAdvance() + kerning) * font.getScale();
@@ -1132,7 +1152,7 @@ public class StringContainer {
             for (int i = pos; i < wBound.end; i++) {
                 newWidth += (glyphs[i].getXAdvance() + (i < glyphs.length - 1 ? kerning : 0)) * font.getScale();
                 
-                if (w + newWidth > textBox.width) {
+                if (useTextBox && w + newWidth > textBox.width) {
                     pos += (numSpaces > 0) ? numSpaces - 1 : 0;
                     w += spaceWidth;
                     lineHeight.x = newAscent > lineHeight.x ? newAscent : lineHeight.x;
@@ -1190,7 +1210,7 @@ public class StringContainer {
         }
         
         if (ellipsis.length != 0) {
-            if (w + ellipsisWidth > textBox.width
+            if ((useTextBox && w + ellipsisWidth > textBox.width)
                     || glyphs[pos - 1].codePoint == ' ') {
                 int backPos = pos - 1;
                 boolean spaceFound = false;
@@ -1200,7 +1220,7 @@ public class StringContainer {
                     w -= (glyphs[backPos].getXAdvance() + (backPos < glyphs.length - 1 ? kerning : 0)) * font.getScale();
                     backPos--;
                 } while (backPos >= start
-                        && (w + ellipsisWidth > textBox.width
+                        && ((useTextBox && w + ellipsisWidth > textBox.width)
                         || glyphs[backPos].codePoint == ' '
                         || !spaceFound));
                 pos = backPos + 1;
