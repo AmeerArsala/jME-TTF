@@ -1,0 +1,68 @@
+repo_name: AmeerArsala/jME-TTF
+report_id: 674d62cc9ed9dfc093763ff446147abc
+version: 0.1
+repo_type: Public
+timestamp: '2024-03-17T04:40:43+00:00'
+requested_by: AmeerArsala
+provider: github
+branch: master
+detected_tools_count: 5
+tools:
+- name: GLSL
+  description: A high-level C-style language
+  website_url: https://www.khronos.org/opengl/wiki/Core_Language_(GLSL)
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/6548/default_a66025fbe8f221c489bdaac3a99d84e5f138cbbd.png
+  detection_source_url: https://github.com/AmeerArsala/jME-TTF
+  detection_source: Repo Metadata
+- name: Java
+  description: A concurrent, class-based, object-oriented, language specifically designed
+    to have as few implementation dependencies as possible
+  website_url: https://www.java.com
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/995/K85ZWV2F.png
+  detection_source_url: https://github.com/AmeerArsala/jME-TTF
+  detection_source: Repo Metadata
+- name: Git
+  description: Fast, scalable, distributed revision control system
+  website_url: http://git-scm.com/
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Version Control System
+  image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/AmeerArsala/jME-TTF
+  detection_source: Repo Metadata
+- name: Gradle
+  description: A powerful build system for the JVM
+  website_url: https://www.gradle.org/
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Java Build Tools
+  image_url: https://img.stackshare.io/service/975/gradlephant-social-black-bg.png
+  detection_source_url: https://github.com/AmeerArsala/jME-TTF/blob/master/build.gradle
+  detection_source: build.gradle
+  last_updated_by: 闫茂源
+  last_updated_on: 2019-08-27 02:23:32.000000000 Z
+- name: com.google.android:android
+  description: A library jar that provides APIs for Applications written for the Google
+    Android Platform
+  version: 4.1.1
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/AmeerArsala/jME-TTF/blob/master/build.gradle
+  detection_source: build.gradle
+  last_updated_by: Ameer Arsala
+  last_updated_on: 2021-07-15 06:19:30.000000000 Z
